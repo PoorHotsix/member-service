@@ -10,7 +10,7 @@ on:
   pull_request:
     branches:
       - main
-      
+
 env:
   GITOPS_PATH: dev/member-service
   
@@ -64,10 +64,10 @@ jobs:      # 여러개의 작업을 정의할 수 있다.
       # uses: aws-actions/amazon-ecr-login@v1
       - name: Login to Amazon ECR
         id: login-ecr
-	run: |
+        run: |
           aws ecr get-login-password | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
-	  
 
+   
       # Docker 이미지를 빌드하고 ECR에 푸시합니다.
       # ECR_REGISTRY: Amazon ECR 레지스트리 URI
       # ECR_REPOSITORY: ECR 내 리포지토리 이름
