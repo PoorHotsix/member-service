@@ -104,7 +104,7 @@ jobs:      # 여러개의 작업을 정의할 수 있다.
           ECR_REPOSITORY: member-service  
         run: |
           cd gitops-repo/$GITOPS_PATH   #  GitHub Actions 워크플로우에서 GitOps 저장소 내의 특정 마이크로서비스 디렉토리 경로,   member-service
-          yq -i '.app.image = "${{ secrets.ECR_REGISTRY }}/$ECR_REGISTRY:${{ github.sha }}"' values.yaml
+          yq -i '.app.image = "${{ secrets.ECR_REGISTRY }}/member-service:${{ github.sha }}"' values.yaml
           
       - name: Commit and push changes to GitOps repo
         run: |
