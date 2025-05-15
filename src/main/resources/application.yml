@@ -1,0 +1,87 @@
+server:
+  port: ${SERVER.PORT}
+
+
+spring:
+  application:
+    name: member-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE}
+    
+  
+  #-----------------------------------------------------------------------
+  # Quarkus 기반 Keycloak-Server 을 이용한 인증 처리
+  # issuer-uri : 토큰을 발급한 주체(issuer)
+  # jwk-set-uri : Keycloak이 사용하는 공개 키 목록을 제공하는 주소로, Spring Security는 이 경로에서 JWT 서명을 검증하기 위한 공개키를 받아온다. 
+  # curl -i http://localhost:8080/realms/react-app/.well-known/openid-configuration
+  #-----------------------------------------------------------------------          
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://keycloak.jaechangma.click/realms/shopmall-realm
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+          # jwk-set-uri: http://Keycloak:8080/realms/test-realm/protocol/openid-connect/certs
+                      
+
+  #-------------------------------------------------------------------------------
+  # MySQL-Server & JPA 설정
+  #-------------------------------------------------------------------------------
+  datasource:   
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      connection-timeout: 20000  # 20초
+      maximum-pool-size: 10
+      initialization-fail-timeout: 0  # 연결 실패해도 앱이 죽지 않게 
+    
+  jpa:
+    hibernate:
+      ddl-auto: update   # create-drop : Application이 종료 될 때 모든 테이블을 drop 시켜준다.    
+    # show-sql: true     # 콘솔에 출력
+    properties:
+      hibernate:   
+        "[format_sql]": true
+   
+
+
+# Logging
+logging:
+  level:   
+    "[org.hibernate.SQL]": debug          # 로그로 출력
+    "[org.hibernate.orm.jdbc.bind]": trace   # 중요 : 바인딩된 값 출력
+    "[com.example.memer_service]": info
+
+
+#-------------------------------------------------------------------------------
+# Eureka-Server에 자가 등록 설정
+#-------------------------------------------------------------------------------
+
+# eureka:
+#   instance:
+#     instance-id: ${spring.application.name}:${spring.cloud.client.hostname}:${server.port}
+#     prefer-ip-address: true   # Eureka 클라이언트가 자신을 등록할 때, 호스트 이름 대신 IP 주소를 사용하여 서비스 레지스리에 등록한다. 
+#   client:  
+#     register-with-eureka: true   
+#     fetch-registry: true
+#     service-url:
+#       defaultZone: http://eureka-server:8761/eureka
+    
+
+
+# Actuator 설정
+# healthcheck를 위한 actuator endpoint 확인
+# curl -f http://localhost:8888/actuator/health
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info  # actuator/health 엔드포인트 노출
+  endpoint:
+    health:
+      probes:
+        enabled: true # /actuator/health/readiness, /actuator/health/liveness  
+  
