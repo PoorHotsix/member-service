@@ -38,8 +38,8 @@ dependencies {
 	//implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'   			   // bootstrap.yaml 설정
 	//implementation 'org.springframework.cloud:spring-cloud-config-client'    				   // config-client 설정	
 	//implementation 'org.springframework.boot:spring-boot-starter-actuator'                   // actuator 설정
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	// implementation 'org.springframework.boot:spring-boot-starter-security'
+	// implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 	// implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'   // Eureka-Client 설정
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

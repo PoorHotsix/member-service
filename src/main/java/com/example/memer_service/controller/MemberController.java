@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+// import org.springframework.security.core.annotation.AuthenticationPrincipal;
+// import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,30 +36,30 @@ public class MemberController  {
     }
 
 
-    @GetMapping("/members/{id}")
-    public ResponseEntity<MemberDto> view(@AuthenticationPrincipal Jwt jwt, @PathVariable(name = "id") Long id) {
-
-        String email = jwt.getClaimAsString("email");
-
-        log.info("----------------------------------------- email : {}", email);
-
-        MemberDto memberDto = memberService.findMember(id);
-
-        return new ResponseEntity<>(memberDto, HttpStatus.OK);
-
-   }
-
-
 //     @GetMapping("/members/{id}")
-//     public ResponseEntity<MemberDto> view(@PathVariable(name = "id") Long id) {
+//     public ResponseEntity<MemberDto> view(@AuthenticationPrincipal Jwt jwt, @PathVariable(name = "id") Long id) {
 
-//         log.info("------------------------- id : {}", id);
+//         String email = jwt.getClaimAsString("email");
+
+//         log.info("----------------------------------------- email : {}", email);
 
 //         MemberDto memberDto = memberService.findMember(id);
 
 //         return new ResponseEntity<>(memberDto, HttpStatus.OK);
 
 //    }
+
+
+    @GetMapping("/members/{id}")
+    public ResponseEntity<MemberDto> view(@PathVariable(name = "id") Long id) {
+
+        log.info("------------------------- id : {}", id);
+
+        MemberDto memberDto = memberService.findMember(id);
+
+        return new ResponseEntity<>(memberDto, HttpStatus.OK);
+
+   }
 
 
    @GetMapping("/members")

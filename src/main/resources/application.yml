@@ -16,13 +16,13 @@ spring:
   # curl -i http://localhost:8080/realms/react-app/.well-known/openid-configuration
   #-----------------------------------------------------------------------          
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://keycloak.jaechangma.click/realms/shopmall-realm
-          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
-          # jwk-set-uri: http://Keycloak:8080/realms/test-realm/protocol/openid-connect/certs
+  # security:
+  #   oauth2:
+  #     resourceserver:
+  #       jwt:
+  #         issuer-uri: https://keycloak.jaechangma.click/realms/shopmall-realm
+  #         jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+  #         # jwk-set-uri: http://Keycloak:8080/realms/test-realm/protocol/openid-connect/certs
                       
 
   #-------------------------------------------------------------------------------
