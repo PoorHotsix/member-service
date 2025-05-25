@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final ShipService shipService; // ShipService 주입
+    private final KeycloakService keycloakService; // KeycloakService 주입
 
     // 회원 가입
     @Override
@@ -24,18 +26,28 @@ public class MemberServiceImpl implements MemberService {
         Member member = dtoToEntity(memberDto);
         memberRepository.save(member);
 
+        // ShipService를 통해 기본 배송지 생성
+        shipService.createDefaultShip(member);
+
+        // Keycloak에도 사용자 생성
+        keycloakService.createUser(
+            member.getEmail(), // email
+            member.getEmail(), // username
+            member.getPassword() // password 
+        );
+
         return member.getEmail();
     }
 
     // 로그인
-    public MemberDto login(String email, String password) {
-        Member member = memberRepository.findById(email)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
-        if (!member.getPassword().equals(password)) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
-        return entityToDto(member);
-    }
+    // public MemberDto login(String email, String password) {
+    //     Member member = memberRepository.findById(email)
+    //             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+    //     if (!member.getPassword().equals(password)) {
+    //         throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+    //     }
+    //     return entityToDto(member);
+    // }
 
     // 전체 회원 조회
     @Override

@@ -12,7 +12,7 @@ public interface MemberService {
     String registerMember(MemberDto memberDto);
 
     //로그인
-    MemberDto login(String email, String password);
+    // MemberDto login(String email, String password);
 
     //전체회원조회
     List<MemberDto> retrieveAllMembers();
