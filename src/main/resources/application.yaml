@@ -47,7 +47,26 @@ spring:
       root: info
       "[org.hibernate.SQL]": debug             # 로그로 출력
       "[org.hibernate.orm.jdbc.bind]": trace   # 중요 : 바인딩된 값 출력
-      '[com.mzc.member_service]': info
+      '[com.mzc.member_service]': INFO
+
+# Redis 설정
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      # password: (설정했다면 입력)
+
+  # SMTP 메일 설정 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    # username: jamong0125@gmail.com
+    # password: dbbrvwrxysnxbqpi
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
 #-------------------------------------------------------------------------------
 # Eureka-Server 에 자가 등록 설정
