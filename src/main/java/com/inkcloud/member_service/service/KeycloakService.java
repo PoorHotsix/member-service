@@ -32,8 +32,9 @@ public class KeycloakService {
         user.setUsername(username);
         user.setEmail(email);
         user.setEnabled(true);
-        user.setFirstName(firstName); // 추가
-        user.setLastName(lastName);   // 추가
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmailVerified(true); // ← 이메일 인증 상태로 저장
 
         // 비밀번호 Credential 
         CredentialRepresentation credential = new CredentialRepresentation();
@@ -47,13 +48,6 @@ public class KeycloakService {
         Response response = keycloak.realm("inkcloud").users().create(user);
 
         log.info("Keycloak 응답 status: {}, location: {}", response.getStatus(), response.getLocation());
-
-        // 사용자 ID 추출
-        String location = response.getHeaderString("Location");
-        String userId = location.substring(location.lastIndexOf('/') + 1);
-
-        // 이메일 인증 메일 발송
-        keycloak.realm("inkcloud").users().get(userId).sendVerifyEmail();
 
         response.close();
     }

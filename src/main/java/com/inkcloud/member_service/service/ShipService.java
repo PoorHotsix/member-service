@@ -17,6 +17,9 @@ public interface ShipService {
     // 한 멤버의 모든 배송지 목록 조회
     List<ShipDto> getShipsByMember(Member member);
 
+    // 배송지 상세 조회 
+    ShipDto getShipById(Long shipId);
+
     // Entity → DTO 변환
     default ShipDto entityToDto(Ship ship) {
         return ShipDto.builder()

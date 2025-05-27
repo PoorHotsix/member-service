@@ -56,15 +56,36 @@ public class ShipController {
         return ResponseEntity.ok(shipList);
     }
 
-    // (관리자용) 특정 회원의 배송지 목록 조회 ??? 맞는지
-    @GetMapping("/admin/{memberId}")
-    public ResponseEntity<List<ShipDto>> getShipsByMemberId(@PathVariable String memberId) {
-        MemberDto memberDto = memberService.getMemberById(memberId);
+    // // (관리자용) 특정 회원의 배송지 목록 조회 ??? 맞는지
+    // @GetMapping("/admin/{memberId}")
+    // public ResponseEntity<List<ShipDto>> getShipsByMemberId(@PathVariable String memberId) {
+    //     MemberDto memberDto = memberService.getMemberById(memberId);
+    //     if (memberDto == null) {
+    //         return ResponseEntity.badRequest().build();
+    //     }
+    //     Member member = memberService.dtoToEntity(memberDto);
+    //     List<ShipDto> shipList = shipService.getShipsByMember(member);
+    //     return ResponseEntity.ok(shipList);
+    // }
+
+    //배송지 상세 조회
+    @GetMapping("/{shipId}")
+    public ResponseEntity<ShipDto> getShipById(@PathVariable Long shipId, @AuthenticationPrincipal Jwt jwt) {
+
+        String memberEmail = jwt.getClaimAsString("email");
+
+        MemberDto memberDto = memberService.getMemberById(memberEmail);
         if (memberDto == null) {
             return ResponseEntity.badRequest().build();
         }
-        Member member = memberService.dtoToEntity(memberDto);
-        List<ShipDto> shipList = shipService.getShipsByMember(member);
-        return ResponseEntity.ok(shipList);
+
+        ShipDto shipDto = shipService.getShipById(shipId);
+        
+        return ResponseEntity.ok(shipDto);
     }
+
+    //배송지 수정 
+
+    //배송지 삭제
+    
 }

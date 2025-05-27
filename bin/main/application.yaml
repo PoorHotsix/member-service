@@ -62,8 +62,6 @@ spring:
     port: 587
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
-    # username: jamong0125@gmail.com
-    # password: dbbrvwrxysnxbqpi
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true

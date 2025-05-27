@@ -48,4 +48,55 @@ public class ShipServiceImpl implements ShipService {
                 .map(this::entityToDto)
                 .toList();
     }
+
+    // 배송지 ID로 단일 배송지 상세 조회
+    @Override
+    public ShipDto getShipById(Long shipId) {
+        Ship ship = shipRepository.findById(shipId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 배송지가 존재하지 않습니다. id=" + shipId));
+        return entityToDto(ship);
+
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
