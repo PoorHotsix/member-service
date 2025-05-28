@@ -25,13 +25,13 @@ import java.util.stream.Collectors;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
-    private final ShipService shipService;
     private final KeycloakService keycloakService;
     private final PasswordEncoder passwordEncoder; // 추가
 
     // 회원 가입
     @Override
     public String registerMember(MemberDto memberDto) {
+        log.info("memberDto:{}", memberDto);
         Optional<Member> optionalMember = memberRepository.findById(memberDto.getEmail());
         LocalDateTime now = LocalDateTime.now(); // 현재 시각으로 변수 선언
 
@@ -41,14 +41,14 @@ public class MemberServiceImpl implements MemberService {
                 throw new IllegalArgumentException("이미 가입된 회원입니다.");
             }
             if (existing.getStatus() == Status.WITHDRAW) {
-                if (existing.getWithdrawnAt() != null && existing.getWithdrawnAt().plusMinutes(7).isAfter(now)) {
+                if (existing.getWithdrawnAt() != null && existing.getWithdrawnAt().plusMinutes(1).isAfter(now)) {
                 //if (existing.getWithdrawnAt() != null && existing.getWithdrawnAt().plusDays(7).isAfter(now)) {
                     throw new IllegalArgumentException("탈퇴 후 7일이 지나야 재가입할 수 있습니다.");
                 }
                 // 7일 지났으면 재가입 처리
                 existing.setStatus(Status.ACTIVE);
                 existing.setWithdrawnAt(null);
-                existing.setRejoinedAt(now); // 현재 시각 사용
+                existing.setRejoinedAt(now); 
                 // 개인정보 덮어쓰기
                 existing.setFirstName(memberDto.getFirstName());
                 existing.setLastName(memberDto.getLastName());
@@ -61,13 +61,14 @@ public class MemberServiceImpl implements MemberService {
             }
         }
 
-        // 1. Keycloak에 원본 비밀번호 전달
+        // 1. Keycloak에 원본 비밀번호와 역할 전달
         keycloakService.createUser(
             memberDto.getEmail(), // email
             memberDto.getEmail(), // username
             memberDto.getPassword(), // password (원본)
             memberDto.getFirstName(),
-            memberDto.getLastName()
+            memberDto.getLastName(),
+            memberDto.getRole().name() // "ADMIN" 또는 "USER"
         );
         log.info("keycloak user save");
 
@@ -75,11 +76,8 @@ public class MemberServiceImpl implements MemberService {
         Member member = dtoToEntity(memberDto); // dtoToEntity에서 인코딩 처리
         memberRepository.save(member);
 
-        log.info("memberrepository save");
+        log.info("memberrepository save:{}", dtoToEntity(memberDto));
 
-        //3. 회원 주소를 기본배송지로 지정 
-        shipService.createDefaultShip(member);
-        log.info("createdefaultship save");
 
         return member.getEmail();
     }
@@ -137,6 +135,37 @@ public class MemberServiceImpl implements MemberService {
         keycloakService.disableUser(email);
     }
 
+
+    //비밀번호 변경 
+    @Override
+    public void changePassword(String email, String newPassword) {
+        // 1. 로컬 DB 회원 비밀번호 변경
+        Member member = memberRepository.findById(email)
+                .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
+        member.setPassword(passwordEncoder.encode(newPassword));
+        memberRepository.save(member);
+        
+        // 2. Keycloak 사용자 비밀번호도 변경 (추가 필요)
+        keycloakService.updatePassword(email, newPassword);
+    }
+
+
+    // 탈퇴 7일 경과 여부 판단 false: 재가입 불가능, true: 재가입 가능
+    @Override
+    public boolean canRejoin(MemberDto memberDto) {
+        if (memberDto.getStatus().equals(Status.WITHDRAW)) {
+            log.info("탈퇴상태 확인:{}", memberDto.getStatus());
+            // withdrawnAt이 null이 아니고, 7일이 지났는지 체크
+            if (memberDto.getWithdrawnAt() != null) {
+                
+                return memberDto.getWithdrawnAt().plusMinutes(1).isBefore(LocalDateTime.now()); //1분 후 재가입
+                //return memberDto.getWithdrawnAt().plusDays(7).isBefore(LocalDateTime.now()); //7일 후 재가입
+            }
+        }
+        return false;
+    }
+
+    
     // dtoToEntity에서 passwordEncoder 사용
     @Override
     public Member dtoToEntity(MemberDto dto) {
@@ -155,9 +184,10 @@ public class MemberServiceImpl implements MemberService {
                 .address(address)
                 .createdAt(dto.getCreatedAt())
                 .role(dto.getRole())
-                .status(dto.getStatus())
+                .status(Status.ACTIVE)
                 .build();
     }
+
 
 
 }

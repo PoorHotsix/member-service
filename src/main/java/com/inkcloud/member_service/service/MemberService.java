@@ -2,6 +2,7 @@ package com.inkcloud.member_service.service;
 
 import com.inkcloud.member_service.domain.Address;
 import com.inkcloud.member_service.domain.Member;
+import com.inkcloud.member_service.domain.Status;
 import com.inkcloud.member_service.dto.MemberDto;
 
 import java.util.List;
@@ -10,9 +11,6 @@ public interface MemberService {
 
     //회원가입
     String registerMember(MemberDto memberDto);
-
-    //로그인
-    // MemberDto login(String email, String password);
 
     //전체회원조회
     List<MemberDto> retrieveAllMembers();
@@ -25,6 +23,12 @@ public interface MemberService {
 
     //회원탈퇴  status 를 ACTIVE 에서 WITHDRAW 로 변경
     void withdrawMember(String email);
+
+    //비밀번호 변경
+    void changePassword(String email, String newPassword);
+
+    //탈퇴 7일 경과 여부 판단 
+    boolean canRejoin(MemberDto memberDto);
 
     // Entity → DTO 변환
     default MemberDto entityToDto(Member member) {
@@ -42,6 +46,8 @@ public interface MemberService {
                 .createdAt(member.getCreatedAt())
                 .role(member.getRole())
                 .status(member.getStatus())
+                .rejoinedAt(member.getRejoinedAt())
+                .withdrawnAt(member.getWithdrawnAt())
                 .build();
     }
 
@@ -62,7 +68,7 @@ public interface MemberService {
                 .address(address)
                 .createdAt(dto.getCreatedAt())
                 .role(dto.getRole())
-                .status(dto.getStatus())
+                .status(Status.ACTIVE) // 회원가입 시 ACTIVE로 설정
                 .build();
     }
 

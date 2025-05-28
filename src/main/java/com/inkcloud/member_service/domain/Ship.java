@@ -47,4 +47,5 @@ public class Ship {
     @ManyToOne
     @JoinColumn(name = "member_email", referencedColumnName = "email", nullable = false)
     private Member member;
+
 }

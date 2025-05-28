@@ -8,9 +8,6 @@ import com.inkcloud.member_service.dto.ShipDto;
 
 public interface ShipService {
 
-    //회원가입시 기본배송지 추가
-    Ship createDefaultShip(Member member);
-
     //배송지 생성 
     Ship createShip(ShipDto shipDto, Member member);
 
@@ -19,6 +16,12 @@ public interface ShipService {
 
     // 배송지 상세 조회 
     ShipDto getShipById(Long shipId);
+
+    //배송지 수정
+    Ship updateShip(Long shipId, ShipDto shipDto, String email);
+
+    //배송지 삭제 
+    void deleteShip(Long shipId, String email);
 
     // Entity → DTO 변환
     default ShipDto entityToDto(Ship ship) {

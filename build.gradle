@@ -25,7 +25,7 @@ repositories {
 }
 
 ext {
-    set('springCloudVersion', "2022.0.1")
+    set('springCloudVersion', "2022.0.5")
 }
 
 
@@ -43,7 +43,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.keycloak:keycloak-admin-client:24.0.3'
-	implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
 	implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	compileOnly 'org.projectlombok:lombok'
