@@ -37,6 +37,7 @@ public class KeycloakService {
             .build();
     }
 
+    
     //사용자 생성
     public void createUser(String email, String username, String password, String firstName, String lastName, String roleName) {
         UserRepresentation user = new UserRepresentation();
@@ -93,12 +94,14 @@ public class KeycloakService {
     }
 
 
+
     //회원탈퇴시 keycloak 에서 비활성화 처리 
     public void disableUser(String email) {
         UserRepresentation user = keycloak.realm("inkcloud").users().search(email).get(0);
         user.setEnabled(false);
         keycloak.realm("inkcloud").users().get(user.getId()).update(user);
     }
+
 
     // 재가입시 keycloak 회원 활성화
     public void enableUser(String email) {
@@ -112,6 +115,7 @@ public class KeycloakService {
         log.info("Keycloak 사용자 활성화 완료: email={}", email);
     }
 
+
     //비밀번호 재설정 이메일 발송 
     public void sendResetPasswordEmail(String email) {
         List<UserRepresentation> users = keycloak.realm("inkcloud").users().search(email);
@@ -123,6 +127,7 @@ public class KeycloakService {
         keycloak.realm("inkcloud").users().get(userId).executeActionsEmail(List.of("UPDATE_PASSWORD"));
         log.info("비밀번호 재설정 이메일 발송 완료: email={}", email);
     }
+
 
     //비밀번호 변경시 키클록 업데이트 
     public void updatePassword(String email, String newPassword) {
