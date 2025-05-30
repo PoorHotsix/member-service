@@ -13,9 +13,11 @@ import java.util.List;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ShipServiceImpl implements ShipService {
 
     private final ShipRepository shipRepository;

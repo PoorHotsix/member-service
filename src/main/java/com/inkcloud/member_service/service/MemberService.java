@@ -5,15 +5,19 @@ import com.inkcloud.member_service.domain.Member;
 import com.inkcloud.member_service.domain.Status;
 import com.inkcloud.member_service.dto.MemberDto;
 
-import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface MemberService {
+    // Pageable pageable = PageRequest.of(page, size);
 
     //회원가입
     String registerMember(MemberDto memberDto);
 
     //전체회원조회
-    List<MemberDto> retrieveAllMembers();
+    Page<MemberDto> retrieveAllMembers(String email, String name, Pageable pageable);
+    
 
     //회원조회
     MemberDto getMemberById(String email);
@@ -34,15 +38,23 @@ public interface MemberService {
     default MemberDto entityToDto(Member member) {
 
         Address address = member.getAddress();
+        String zipcode = null;
+        String addressMain = null;
+        String addressSub = null;
+        if (address != null) {
+            zipcode = address.getZipcode() != null ? String.valueOf(address.getZipcode()) : null;
+            addressMain = address.getAddressMain();
+            addressSub = address.getAddressSub();
+        }
         return MemberDto.builder()
                 .email(member.getEmail())
                 .password(member.getPassword())
                 .firstName(member.getFirstName())
                 .lastName(member.getLastName())
                 .phoneNumber(member.getPhoneNumber())
-                .zipcode(String.valueOf(address.getZipcode()))
-                .addressMain(address.getAddressMain())
-                .addressSub(address.getAddressSub())
+                .zipcode(zipcode)
+                .addressMain(addressMain)
+                .addressSub(addressSub)
                 .createdAt(member.getCreatedAt())
                 .role(member.getRole())
                 .status(member.getStatus())

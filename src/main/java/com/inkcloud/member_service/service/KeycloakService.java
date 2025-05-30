@@ -4,8 +4,13 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
+
+
 import jakarta.ws.rs.core.Response;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
@@ -15,6 +20,7 @@ import java.util.List;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 public class KeycloakService {
 
     private final Keycloak keycloak;
@@ -39,6 +45,7 @@ public class KeycloakService {
 
     
     //사용자 생성
+    @Transactional(readOnly = false, propagation=Propagation.REQUIRED)
     public void createUser(String email, String username, String password, String firstName, String lastName, String roleName) {
         UserRepresentation user = new UserRepresentation();
         user.setUsername(username);
@@ -96,6 +103,7 @@ public class KeycloakService {
 
 
     //회원탈퇴시 keycloak 에서 비활성화 처리 
+    @Transactional(readOnly = false, propagation=Propagation.REQUIRED)
     public void disableUser(String email) {
         UserRepresentation user = keycloak.realm("inkcloud").users().search(email).get(0);
         user.setEnabled(false);
@@ -104,6 +112,7 @@ public class KeycloakService {
 
 
     // 재가입시 keycloak 회원 활성화
+    @Transactional(readOnly = false, propagation=Propagation.REQUIRED)
     public void enableUser(String email) {
         List<UserRepresentation> users = keycloak.realm("inkcloud").users().search(email);
         if (users.isEmpty()) {
@@ -130,6 +139,7 @@ public class KeycloakService {
 
 
     //비밀번호 변경시 키클록 업데이트 
+    @Transactional(readOnly = false, propagation=Propagation.REQUIRED)
     public void updatePassword(String email, String newPassword) {
         try {
             

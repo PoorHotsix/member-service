@@ -12,13 +12,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Address {
 
-    @Column(nullable = false)
     private Integer zipcode;
 
-    @Column(name = "address_main", nullable = false)
+    @Column(name = "address_main")
     private String addressMain;
 
-    @Column(name = "address_sub", nullable = false)
+    @Column(name = "address_sub")
     private String addressSub;
 
 }

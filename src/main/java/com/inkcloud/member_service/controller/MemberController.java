@@ -3,6 +3,9 @@ package com.inkcloud.member_service.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,11 +13,13 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.inkcloud.member_service.dto.EmailRequestDto;
 import com.inkcloud.member_service.dto.MemberDto;
 import com.inkcloud.member_service.dto.PasswordDto;
+
 import com.inkcloud.member_service.service.KeycloakService;
 import com.inkcloud.member_service.service.MemberService;
 
@@ -48,8 +53,14 @@ public class MemberController {
     //회원목록조회 (관리자만 접근 가능)
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
-    public ResponseEntity<List<MemberDto>> getAllMembers() {
-        List<MemberDto> members = memberService.retrieveAllMembers();
+    public ResponseEntity<Page<MemberDto>> getAllMembers(
+        @RequestParam(required = false) String email,
+        @RequestParam(required = false) String name,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        PageRequest pageable = PageRequest.of(page, size);
+        Page<MemberDto> members = memberService.retrieveAllMembers(email, name, pageable);
         return ResponseEntity.ok(members);
     }
 

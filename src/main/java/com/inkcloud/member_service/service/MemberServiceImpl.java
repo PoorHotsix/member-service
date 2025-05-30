@@ -2,6 +2,7 @@ package com.inkcloud.member_service.service;
 
 import com.inkcloud.member_service.domain.Address;
 import com.inkcloud.member_service.domain.Member;
+import com.inkcloud.member_service.domain.Role;
 import com.inkcloud.member_service.domain.Status;
 import com.inkcloud.member_service.dto.MemberDto;
 import com.inkcloud.member_service.repository.MemberRepository;
@@ -10,7 +11,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
@@ -20,7 +24,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
 
@@ -30,6 +34,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 회원 가입
     @Override
+    @Transactional(readOnly = false, propagation=Propagation.REQUIRED)
     public String registerMember(MemberDto memberDto) {
         log.info("memberDto:{}", memberDto);
         Optional<Member> optionalMember = memberRepository.findById(memberDto.getEmail());
@@ -85,11 +90,10 @@ public class MemberServiceImpl implements MemberService {
     
     // 전체 회원 조회
     @Override
-    public List<MemberDto> retrieveAllMembers() {
-        return memberRepository.findAll()
-                .stream()
-                .map(this::entityToDto)
-                .collect(Collectors.toList());
+    public Page<MemberDto> retrieveAllMembers(String email, String name, Pageable pageable) {
+        return memberRepository.searchMembers(email, name, pageable)
+                .map(this::entityToDto);
+
     }
 
 
@@ -169,11 +173,18 @@ public class MemberServiceImpl implements MemberService {
     // dtoToEntity에서 passwordEncoder 사용
     @Override
     public Member dtoToEntity(MemberDto dto) {
-        Address address = new Address(
-                Integer.valueOf(dto.getZipcode()),
+    Address address = null; // 관리자 회원가입 시 주소값이 없어도 예외가 발생하지 않도록 처리
+        if (dto.getZipcode() != null || dto.getAddressMain() != null || dto.getAddressSub() != null) {
+            Integer zipcode = null;
+            if (dto.getZipcode() != null && !dto.getZipcode().isEmpty()) {
+                zipcode = Integer.valueOf(dto.getZipcode());
+            }
+            address = new Address(
+                zipcode,
                 dto.getAddressMain(),
                 dto.getAddressSub()
-        );
+            );
+        }
 
         return Member.builder()
                 .email(dto.getEmail())

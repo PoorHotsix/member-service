@@ -29,9 +29,6 @@ public class EmailVerificationController {
         try {
             MemberDto memberDto = memberService.getMemberById(email);
 
-            boolean canRejoin = memberService.canRejoin(memberDto);
-            log.info("[이메일 인증] 탈퇴 회원, 재가입 가능 여부: {}", canRejoin);
-
             if (memberDto.getStatus().equals(Status.ACTIVE)) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 가입된 회원입니다.");
             }
