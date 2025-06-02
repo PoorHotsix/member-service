@@ -64,7 +64,7 @@ jobs:      # 여러개의 작업을 정의할 수 있다.
       # uses: aws-actions/amazon-ecr-login@v1
       - name: Login to Amazon ECR
         id: login-ecr
-	      run: |
+	run: |
           aws ecr get-login-password | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}  
       
 
