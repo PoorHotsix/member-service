@@ -5,6 +5,7 @@ import com.inkcloud.member_service.domain.Member;
 import com.inkcloud.member_service.domain.Role;
 import com.inkcloud.member_service.domain.Status;
 import com.inkcloud.member_service.dto.MemberDto;
+import com.inkcloud.member_service.dto.ShipDto;
 import com.inkcloud.member_service.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,7 +30,8 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final KeycloakService keycloakService;
-    private final PasswordEncoder passwordEncoder; // 추가
+    private final ShipService shipService;
+    private final PasswordEncoder passwordEncoder; 
 
     // 회원 가입
     @Override
@@ -38,7 +39,7 @@ public class MemberServiceImpl implements MemberService {
     public String registerMember(MemberDto memberDto) {
         log.info("memberDto:{}", memberDto);
         Optional<Member> optionalMember = memberRepository.findById(memberDto.getEmail());
-        LocalDateTime now = LocalDateTime.now(); // 현재 시각으로 변수 선언
+        LocalDateTime now = LocalDateTime.now();
 
         if (optionalMember.isPresent()) {
             Member existing = optionalMember.get();
@@ -47,43 +48,54 @@ public class MemberServiceImpl implements MemberService {
             }
             if (existing.getStatus() == Status.WITHDRAW) {
                 if (existing.getWithdrawnAt() != null && existing.getWithdrawnAt().plusMinutes(1).isAfter(now)) {
-                //if (existing.getWithdrawnAt() != null && existing.getWithdrawnAt().plusDays(7).isAfter(now)) {
                     throw new IllegalArgumentException("탈퇴 후 7일이 지나야 재가입할 수 있습니다.");
                 }
                 // 7일 지났으면 재가입 처리
                 existing.setStatus(Status.ACTIVE);
                 existing.setWithdrawnAt(null);
-                existing.setRejoinedAt(now); 
-                // 개인정보 덮어쓰기
+                existing.setRejoinedAt(now);
                 existing.setFirstName(memberDto.getFirstName());
                 existing.setLastName(memberDto.getLastName());
                 existing.setPhoneNumber(memberDto.getPhoneNumber());
                 existing.setPassword(passwordEncoder.encode(memberDto.getPassword()));
-                // Keycloak 계정도 enable 처리
+
+                // Keycloak 사용자 활성화
                 keycloakService.enableUser(existing.getEmail());
+                // Keycloak 비밀번호, 성, 이름도 업데이트
+                keycloakService.updateUserInfo(
+                    existing.getEmail(),
+                    memberDto.getPassword(),
+                    memberDto.getFirstName(),
+                    memberDto.getLastName()
+                );
+
                 memberRepository.save(existing);
                 return existing.getEmail();
             }
         }
 
-        // 1. Keycloak에 원본 비밀번호와 역할 전달
+        // 1. Keycloak 사용자 생성 (예외 발생 가능)
         keycloakService.createUser(
-            memberDto.getEmail(), // email
-            memberDto.getEmail(), // username
-            memberDto.getPassword(), // password (원본)
+            memberDto.getEmail(),
+            memberDto.getEmail(),
+            memberDto.getPassword(),
             memberDto.getFirstName(),
             memberDto.getLastName(),
-            memberDto.getRole().name() // "ADMIN" 또는 "USER"
+            memberDto.getRole().name()
         );
         log.info("keycloak user save");
 
-        // 2. 비밀번호 인코딩 후 member_db에 저장
-        Member member = dtoToEntity(memberDto); // dtoToEntity에서 인코딩 처리
-        memberRepository.save(member);
+        // 2. DB 저장 (실패 시 Keycloak 사용자 삭제)
+        Member member = dtoToEntity(memberDto);
+        try {
+            memberRepository.save(member);
+        } catch (Exception e) {
+            // DB 저장 실패 시 Keycloak 사용자 삭제
+            keycloakService.deleteUser(memberDto.getEmail());
+            throw e;
+        }
 
-        log.info("memberrepository save:{}", dtoToEntity(memberDto));
-
-
+        log.info("memberrepository save:{}", member);
         return member.getEmail();
     }
 
@@ -108,6 +120,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 회원정보수정
     @Override
+    @Transactional(readOnly = false)
     public void updateMemberInfo(String email, String phoneNumber, String zipcode, String addressMain, String addressSub) {
         Member member = memberRepository.findById(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
@@ -129,12 +142,20 @@ public class MemberServiceImpl implements MemberService {
 
     // 회원탈퇴: status를 ACTIVE에서 WITHDRAW로 변경, withdrawnAt에 탈퇴시각 저장
     @Override
+    @Transactional(readOnly = false, propagation=Propagation.REQUIRED)
     public void withdrawMember(String email) {
         Member member = memberRepository.findById(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
-        //회원 탈퇴 상태로 변경
+        // 회원 탈퇴 상태로 변경
         member.setStatus(Status.WITHDRAW);
         member.setWithdrawnAt(LocalDateTime.now());
+
+        // 회원에 연관된 배송지 모두 삭제
+        List<ShipDto> ships = shipService.getShipsByMember(member);
+        for (ShipDto ship : ships) {
+            shipService.deleteShip(ship.getId(), email);
+        }
+
         // keycloak 사용자 비활성화 
         keycloakService.disableUser(email);
     }
@@ -142,6 +163,7 @@ public class MemberServiceImpl implements MemberService {
 
     //비밀번호 변경 
     @Override
+    @Transactional(readOnly = false, propagation=Propagation.REQUIRED)
     public void changePassword(String email, String newPassword) {
         // 1. 로컬 DB 회원 비밀번호 변경
         Member member = memberRepository.findById(email)

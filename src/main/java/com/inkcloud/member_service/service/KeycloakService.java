@@ -9,7 +9,6 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import jakarta.ws.rs.core.Response;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -20,7 +19,6 @@ import java.util.List;
 
 @Slf4j
 @Service
-@Transactional(readOnly = true)
 public class KeycloakService {
 
     private final Keycloak keycloak;
@@ -45,7 +43,6 @@ public class KeycloakService {
 
     
     //사용자 생성
-    @Transactional(readOnly = false, propagation=Propagation.REQUIRED)
     public void createUser(String email, String username, String password, String firstName, String lastName, String roleName) {
         UserRepresentation user = new UserRepresentation();
         user.setUsername(username);
@@ -103,7 +100,6 @@ public class KeycloakService {
 
 
     //회원탈퇴시 keycloak 에서 비활성화 처리 
-    @Transactional(readOnly = false, propagation=Propagation.REQUIRED)
     public void disableUser(String email) {
         UserRepresentation user = keycloak.realm("inkcloud").users().search(email).get(0);
         user.setEnabled(false);
@@ -112,7 +108,6 @@ public class KeycloakService {
 
 
     // 재가입시 keycloak 회원 활성화
-    @Transactional(readOnly = false, propagation=Propagation.REQUIRED)
     public void enableUser(String email) {
         List<UserRepresentation> users = keycloak.realm("inkcloud").users().search(email);
         if (users.isEmpty()) {
@@ -139,7 +134,6 @@ public class KeycloakService {
 
 
     //비밀번호 변경시 키클록 업데이트 
-    @Transactional(readOnly = false, propagation=Propagation.REQUIRED)
     public void updatePassword(String email, String newPassword) {
         try {
             
@@ -168,6 +162,41 @@ public class KeycloakService {
         } catch (Exception e) {
             throw new RuntimeException("Keycloak 사용자 비밀번호 변경 실패", e);
         }
+    }
+
+    // 회원가입 실패시 이미 keycloak에 등록된 사용자 찾아서 삭제
+    public void deleteUser(String email) {
+
+        List<UserRepresentation> users = keycloak.realm("inkcloud").users().search(email);
+
+        if (!users.isEmpty()) {
+            String userId = users.get(0).getId();
+            keycloak.realm("inkcloud").users().delete(userId);
+            log.info("Keycloak 사용자 삭제: email={}, userId={}", email, userId);
+        } else {
+            log.warn("Keycloak 사용자 삭제 실패: email={} (사용자 없음)", email);
+        }
+    }
+
+
+    //재가입시 회원정보(성, 이름, 비밀번호) 변경
+    public void updateUserInfo(String email, String password, String firstName, String lastName) {
+        List<UserRepresentation> users = keycloak.realm("inkcloud").users().search(email);
+        if (users.isEmpty()) return;
+        String userId = users.get(0).getId();
+
+        // 비밀번호 변경
+        CredentialRepresentation credential = new CredentialRepresentation();
+        credential.setType(CredentialRepresentation.PASSWORD);
+        credential.setValue(password);
+        credential.setTemporary(false);
+        keycloak.realm("inkcloud").users().get(userId).resetPassword(credential);
+
+        // 성/이름 변경
+        UserRepresentation user = users.get(0);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        keycloak.realm("inkcloud").users().get(userId).update(user);
     }
 
 
