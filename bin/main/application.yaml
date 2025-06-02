@@ -37,11 +37,10 @@ spring:
       # password: 필요시 입력
   # SMTP 메일 설정 
   mail:
-    host: sandbox.smtp.mailtrap.io
-    port: 2525
-    # username: ${MAIL_USERNAME}
-    username: 503ff5868955c1
-    password: 70207b51c47f69
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
@@ -56,12 +55,12 @@ logging:
     com.mzc.member_service: INFO
 
 # Eureka-Server 에 자가 등록 설정
-eureka:
-  instance:
-    instance-id: ${spring.application.name}:${spring.cloud.client.hostname}:${server.port}
-    prefer-ip-address: true
-  client:  
-    register-with-eureka: true  
-    fetch-registry: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka
+# eureka:
+#   instance:
+#     instance-id: ${spring.application.name}:${spring.cloud.client.hostname}:${server.port}
+#     prefer-ip-address: true
+#   client:  
+#     register-with-eureka: true  
+#     fetch-registry: true
+#     service-url:
+#       defaultZone: http://localhost:8761/eureka
