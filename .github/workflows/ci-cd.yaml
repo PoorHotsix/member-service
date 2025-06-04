@@ -94,6 +94,7 @@ jobs:      # 여러개의 작업을 정의할 수 있다.
           path: gitops-repo                        # 저장소를 체크아웃할 로컬 경로, gitops-repo/ 라는 하위 폴더에 복제한다.
 
       #  yq 유틸리티 : GitHub Actions 내에서 values.yaml 등의 YAML 파일을 자동으로 수정하기 위해 사용
+                # IMAGE_TAG="${{ secrets.ECR_REGISTRY }}/$ECR_REPOSITORY:${{ github.sha }}"
       - name: Install yq for YAML editing
         run: |
           sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
@@ -104,7 +105,7 @@ jobs:      # 여러개의 작업을 정의할 수 있다.
           ECR_REPOSITORY: member-service  
         run: |
           cd gitops-repo/$GITOPS_PATH   #  GitHub Actions 워크플로우에서 GitOps 저장소 내의 특정 마이크로서비스 디렉토리 경로,   member-service
-          IMAGE_TAG="${{ secrets.ECR_REGISTRY }}/$ECR_REPOSITORY:${{ github.sha }}"
+          IMAGE_TAG="$430118853107.dkr.ecr.ap-northeast-2.amazonaws.com/$ECR_REPOSITORY:${{ github.sha }}" 
           yq -i ".app.image = \"${IMAGE_TAG}\"" values.yaml
           
       - name: Commit and push changes to GitOps repo
