@@ -32,7 +32,7 @@ spring:
   # Redis 설정
   data:
     redis:
-      host: localhost
+      host: redis.member-service.svc.cluster.local
       port: 6379
       # password: 필요시 입력
   # SMTP 메일 설정 
