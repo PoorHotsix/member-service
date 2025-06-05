@@ -1,6 +1,6 @@
 server:
   port: 10000
-
+ 
 spring:
   application:
     name: member-service
@@ -12,11 +12,11 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/inkcloud
+          issuer-uri: https://keycloak.inkcloud.click/realms/inkcloud
           jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
   datasource:   
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/member_db?serverTimezone=Asia/Seoul&characterEncoding=utf8
+    url: jdbc:mysql://mysql.inkcloud.svc.cluster.local:3306/member_db?serverTimezone=Asia/Seoul&characterEncoding=utf8
     username: root
     password: 1234  
     hikari:
@@ -32,15 +32,15 @@ spring:
   # Redis 설정
   data:
     redis:
-      host: localhost
+      host: redis.member-service.svc.cluster.local
       port: 6379
       # password: 필요시 입력
   # SMTP 메일 설정 
   mail:
-    host: ${MAIL_HOST}
-    port: ${MAIL_PORT}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    host: ${SPRING_MAIL_HOST}
+    port: ${SPRING_MAIL_PORT}
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
