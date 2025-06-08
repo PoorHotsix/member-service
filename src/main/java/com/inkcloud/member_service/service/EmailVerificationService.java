@@ -9,12 +9,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class EmailVerificationService {
 
     private final JavaMailSender mailSender;
@@ -34,6 +36,7 @@ public class EmailVerificationService {
         helper.setFrom("jamong0125@gmail.com", "InkCloud"); // 이름 지정
         helper.setSubject("이메일 인증번호");
         helper.setText("인증번호는 [" + code + "] 입니다. 5분 안에 입력해주세요.");
+        log.info(" ==================== 코드 : {}" , code);
         mailSender.send(mimeMessage);
     }
 
