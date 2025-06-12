@@ -43,8 +43,8 @@ spring:
     # password: ${MAIL_PASSWORD}
     host: sandbox.smtp.mailtrap.io
     port: 2525
-    username: 503ff5868955c1
-    password: 70207b51c47f69
+    username: 
+    password: 
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
