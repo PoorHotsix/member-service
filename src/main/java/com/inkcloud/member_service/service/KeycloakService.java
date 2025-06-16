@@ -26,7 +26,8 @@ public class KeycloakService {
     public KeycloakService() {
         // 관리용 realm(master)과 client(admin-cli)로 인증
         this.keycloak = KeycloakBuilder.builder()
-            .serverUrl("https://keycloak.inkcloud.click")
+            .serverUrl("http://keycloak:8080")
+            //.serverUrl("https://keycloak.inkcloud.click")
             .realm("master")
             .clientId("admin-cli")
             .username("admin")
