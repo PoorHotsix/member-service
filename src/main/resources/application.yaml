@@ -5,20 +5,20 @@ spring:
   application:
     name: member-service
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE}
   # MySQL-Server & JPA 설정
   # Quarkus 기반 Keycloak-Server 을 이용한 인증 처리
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://keycloak:8080/realms/inkcloud
+          issuer-uri: ${SPRING_KEYCLOAK_URL}
           jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
   datasource:   
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://db:3306/member_db?serverTimezone=Asia/Seoul&characterEncoding=utf8
-    username: root
-    password: 1234  
+    url: ${SPRING_PRODUCT_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     hikari:
       connection-timeout: 20000
       maximum-pool-size: 10
