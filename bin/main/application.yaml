@@ -1,5 +1,5 @@
 server:
-  port: 10000
+  port: ${SPRING_MEMBER_SERVER_PORT}
  
 spring:
   application:
@@ -16,7 +16,7 @@ spring:
           jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
   datasource:   
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${SPRING_PRODUCT_DATASOURCE_URL}
+    url: ${SPRING_MEMBER_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     hikari:
