@@ -7,6 +7,8 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 
 
 import jakarta.ws.rs.core.Response;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 
@@ -23,11 +25,11 @@ public class KeycloakService {
 
     private final Keycloak keycloak;
 
-    public KeycloakService() {
+    public KeycloakService(@Value("${SPRING_KEYCLOAK_URL}") String keycloakUrl) {
         // 관리용 realm(master)과 client(admin-cli)로 인증
         this.keycloak = KeycloakBuilder.builder()
-            .serverUrl("http://keycloak:8080")
-            //.serverUrl("https://keycloak.inkcloud.click")
+            // .serverUrl("http://keycloak:8080")
+            .serverUrl(keycloakUrl)
             .realm("master")
             .clientId("admin-cli")
             .username("admin")
