@@ -102,10 +102,8 @@ public class MemberServiceImpl implements MemberService {
     
     // 전체 회원 조회
     @Override
-    public Page<MemberDto> retrieveAllMembers(String email, String name, Pageable pageable) {
-        return memberRepository.searchMembers(email, name, pageable)
-                .map(this::entityToDto);
-
+    public Page<Member> searchMembers(String email, String name, Status status, Pageable pageable) {
+        return memberRepository.searchMembers(email, name, status, pageable);
     }
 
 

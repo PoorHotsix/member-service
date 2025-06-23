@@ -53,6 +53,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     // 인증번호 생성용 (optional)
     implementation 'org.apache.commons:commons-lang3:3.12.0'
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
 
 tasks.named('test') {

@@ -16,7 +16,7 @@ public interface MemberService {
     String registerMember(MemberDto memberDto);
 
     //전체회원조회
-    Page<MemberDto> retrieveAllMembers(String email, String name, Pageable pageable);
+    Page<Member> searchMembers(String email, String name, Status status, Pageable pageable);
     
 
     //회원조회

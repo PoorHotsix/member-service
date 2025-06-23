@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.inkcloud.member_service.domain.Status;
 import com.inkcloud.member_service.dto.EmailRequestDto;
 import com.inkcloud.member_service.dto.MemberDto;
 import com.inkcloud.member_service.dto.PasswordDto;
@@ -51,17 +54,47 @@ public class MemberController {
 
 
     //회원목록조회 (관리자만 접근 가능)
+    // 컨트롤러에서 문자열로 받은 status를 Enum으로 변환
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public ResponseEntity<Page<MemberDto>> getAllMembers(
         @RequestParam(required = false) String email,
         @RequestParam(required = false) String name,
+        @RequestParam(required = false) String status,
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false, defaultValue = "createdAt,desc") String[] sort
     ) {
-        PageRequest pageable = PageRequest.of(page, size);
-        Page<MemberDto> members = memberService.retrieveAllMembers(email, name, pageable);
-        return ResponseEntity.ok(members);
+        // status 문자열을 Enum으로 변환
+        Status statusEnum = null;
+        if (status != null && !status.isEmpty()) {
+            try {
+                statusEnum = Status.valueOf(status);
+            } catch (IllegalArgumentException e) {
+                // 잘못된 상태값이면 무시하고 진행
+                log.warn("Invalid status value: {}", status);
+            }
+        }
+
+        Pageable pageable = PageRequest.of(page, size, getSortOrders(sort));
+        Page<MemberDto> result = memberService.searchMembers(email, name, statusEnum, pageable)
+            .map(memberService::entityToDto);
+        return ResponseEntity.ok(result);
+    }
+
+    private Sort getSortOrders(String[] sort) {
+        if (sort.length == 0) {
+            return Sort.by(Sort.Direction.DESC, "createdAt");
+        }
+        
+        String property = sort[0];
+        String direction = sort.length > 1 ? sort[1] : "asc";
+        
+        return Sort.by(
+            direction.equalsIgnoreCase("asc") ? 
+                Sort.Direction.ASC : Sort.Direction.DESC, 
+            property
+        );
     }
 
     //1. 사용자 회원 상세 조회 - JWT 토큰
