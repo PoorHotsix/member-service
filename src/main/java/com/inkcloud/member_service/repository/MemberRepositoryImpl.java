@@ -27,21 +27,28 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
 
         BooleanExpression predicate = member.role.eq(Role.USER);
 
-        // 이메일 검색 조건
-        if (email != null && !email.isEmpty()) {
-            predicate = predicate.and(member.email.contains(email));
+        // 이메일 또는 이름 검색 조건 (OR 조건으로 변경)
+        if ((email != null && !email.isEmpty()) || (name != null && !name.isEmpty())) {
+            // 검색어가 이메일과 이름 필드 중 하나라도 포함되어 있으면 검색 결과에 포함
+            BooleanExpression emailCond = email != null && !email.isEmpty() ? 
+                                         member.email.contains(email) : null;
+                                         
+            BooleanExpression nameCond = name != null && !name.isEmpty() ? 
+                                        member.lastName.contains(name)
+                                        .or(member.firstName.contains(name))
+                                        .or(member.lastName.concat(member.firstName).contains(name)) : null;
+                                        
+            // 이메일 조건이 있으면 사용, 없으면 이름 조건만 사용
+            if (emailCond != null && nameCond != null) {
+                predicate = predicate.and(emailCond.or(nameCond));
+            } else if (emailCond != null) {
+                predicate = predicate.and(emailCond);
+            } else if (nameCond != null) {
+                predicate = predicate.and(nameCond);
+            }
         }
         
-        // 이름 검색 조건
-        if (name != null && !name.isEmpty()) {
-            predicate = predicate.and(
-                member.lastName.contains(name)
-                .or(member.firstName.contains(name))
-                .or(member.lastName.concat(member.firstName).contains(name))
-            );
-        }
-        
-        // 상태 검색 조건 추가 (Enum 타입)
+        // 상태 필터링은 그대로 유지
         if (status != null) {
             predicate = predicate.and(member.status.eq(status));
         }
